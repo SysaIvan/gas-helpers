@@ -30,5 +30,11 @@ export default defineConfig({
 	test: {
 		globals: true,
 		include: ['**/__specs__/**/*.spec.ts'],
+		coverage: {
+			provider: 'istanbul',
+			include: ['src/**/*.ts'],
+			exclude: ['**/__specs__/**', '**/*.spec.ts', '**/index.ts'],
+			reporter: ['text', 'json-summary'],
+		},
 	},
 });

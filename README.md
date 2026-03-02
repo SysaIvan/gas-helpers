@@ -1,5 +1,7 @@
 # gas-helpers
 
+![](https://img.shields.io/badge/Coverage-92%25-83A603.svg?style=flat&prefix=$coverage$)
+
 Helper utilities for Google Apps Script: UI, triggers, Telegram notifications, Google Sheets (Entity/Repository).
 
 > **For AI agents**: See [AGENTS.md](./AGENTS.md) for imports, patterns, and GAS caveats.
