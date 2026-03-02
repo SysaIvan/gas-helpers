@@ -31,6 +31,10 @@
 			"types": "./dist/sheet/index.d.ts",
 			"default": "./dist/sheet.js"
 		},
+		"./entity": {
+			"types": "./dist/entity/index.d.ts",
+			"default": "./dist/entity.js"
+		},
 		"./ui": {
 			"types": "./dist/ui/index.d.ts",
 			"default": "./dist/ui.js"
@@ -68,7 +72,7 @@
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-prettier": "^5.5.5",
 		"gts": "^7.0.0",
-		"prettier-plugin-organize-imports": "^4.3.0",
+		"@trivago/prettier-plugin-sort-imports": "^6.0.2",
 		"typescript-eslint": "^8.46.0"
 	},
 	"devDependencies": {

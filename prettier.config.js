@@ -1,6 +1,14 @@
 /** @type {import('prettier').Config} */
 export default {
-	plugins: ['prettier-plugin-organize-imports'],
+	plugins: ['@trivago/prettier-plugin-sort-imports'],
+	importOrder: [
+		'<BUILTIN_MODULES>',
+		'<THIRD_PARTY_MODULES>',
+		'^\\.\\./',
+		'^\\./',
+	],
+	importOrderSeparation: true,
+	importOrderSortSpecifiers: true,
 	arrowParens: 'always',
 	bracketSpacing: true,
 	bracketSameLine: false,

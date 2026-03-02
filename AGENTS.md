@@ -5,16 +5,16 @@ Helper utilities for Google Apps Script. Use this file when generating code that
 ## Imports
 
 ```typescript
-import { Ui } from 'gas-helpers/ui';
-import { Trigger } from 'gas-helpers/triggers';
-import { TelegramNotifier } from 'gas-helpers/telegram';
+import { ScriptProperty } from 'gas-helpers/properties';
 import {
 	Entity,
-	Repository,
 	type EntityConfig,
+	Repository,
 	type Transformer,
 } from 'gas-helpers/sheet';
-import { ScriptProperty } from 'gas-helpers/properties';
+import { TelegramNotifier } from 'gas-helpers/telegram';
+import { Trigger } from 'gas-helpers/triggers';
+import { Ui } from 'gas-helpers/ui';
 ```
 
 ## GAS Caveats
