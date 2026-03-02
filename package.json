@@ -1,0 +1,79 @@
+{
+	"name": "@sysa-ivan/gas-helpers",
+	"version": "1.0.0",
+	"description": "Helper utilities for Google Apps Script: UI dialogs, triggers, Telegram notifications, Entity/Repository for Sheets",
+	"keywords": [
+		"google-apps-script",
+		"gas",
+		"spreadsheet",
+		"google-sheets",
+		"triggers",
+		"entity",
+		"repository",
+		"unit-of-work",
+		"properties",
+		"script-properties"
+	],
+	"private": false,
+	"repository": "github:SysaIvan/gas-helpers",
+	"type": "module",
+	"sideEffects": false,
+	"exports": {
+		"./triggers": {
+			"types": "./dist/triggers/index.d.ts",
+			"default": "./dist/triggers.js"
+		},
+		"./telegram": {
+			"types": "./dist/telegram/index.d.ts",
+			"default": "./dist/telegram.js"
+		},
+		"./sheet": {
+			"types": "./dist/sheet/index.d.ts",
+			"default": "./dist/sheet.js"
+		},
+		"./ui": {
+			"types": "./dist/ui/index.d.ts",
+			"default": "./dist/ui.js"
+		},
+		"./properties": {
+			"types": "./dist/properties/index.d.ts",
+			"default": "./dist/properties.js"
+		},
+		"./eslint": "./eslint.config.mjs",
+		"./prettier": "./prettier.config.js"
+	},
+	"files": [
+		"dist",
+		"*.mjs",
+		"*.js"
+	],
+	"scripts": {
+		"build": "rimraf dist && vite build",
+		"lint": "eslint .",
+		"format": "prettier --check .",
+		"test": "vitest",
+		"test:run": "vitest run",
+		"pr-ready": "npm run format -- --write && npm run lint && npm run test:run && npm run build"
+	},
+	"peerDependencies": {
+		"@types/google-apps-script": "^2.0.8",
+		"eslint": ">=9",
+		"prettier": ">=3",
+		"typescript": ">=5"
+	},
+	"dependencies": {
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-prettier": "^5.5.5",
+		"gts": "^7.0.0",
+		"typescript-eslint": "^8.46.0",
+		"prettier-plugin-organize-imports": "^4.3.0"
+	},
+	"devDependencies": {
+		"@types/google-apps-script": "^2.0.8",
+		"rimraf": "^6.0.0",
+		"@types/node": "^25.3.3",
+		"vite": "^7.3.1",
+		"vite-plugin-dts": "^4.5.4",
+		"vitest": "^4.0.18"
+	}
+}

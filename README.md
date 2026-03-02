@@ -1,0 +1,36 @@
+# gas-helpers
+
+Helper utilities for Google Apps Script: UI, triggers, Telegram notifications, Google Sheets (Entity/Repository).
+
+> **For AI agents**: See [AGENTS.md](./AGENTS.md) for imports, patterns, and GAS caveats.
+
+## Installation
+
+```bash
+npm install gas-helpers
+```
+
+## Modules
+
+| Module                                   | Description                                                             |
+| ---------------------------------------- | ----------------------------------------------------------------------- |
+| [ui](./src/ui/README.md)                 | Spreadsheet UI dialogs (alert, confirm, prompt) with availability check |
+| [triggers](./src/triggers/README.md)     | Managing time-based triggers in Google Apps Script                      |
+| [telegram](./src/telegram/README.md)     | Sending notifications to Telegram via Bot API                           |
+| [sheet](./src/sheet/README.md)           | Entity and Repository for working with Google Sheets data               |
+| [properties](./src/properties/README.md) | ScriptProperty for typed key-value storage in script properties         |
+
+## Requirements
+
+- Google Apps Script
+- `@types/google-apps-script` (peer dependency)
+
+## Common Pitfalls
+
+- **Ui unavailable**: When script runs from a trigger, `onEdit`, or time-driven execution, `SpreadsheetApp.getUi()` throws. Always use `Ui.isAvailable()` before `alert`, `confirm`, `prompt`.
+- **Secrets**: Store `botToken` in `PropertiesService.getScriptProperties()`, not in source code.
+- **Entity columns**: Column indices are 0-based (same as array indices).
+
+## License
+
+ISC

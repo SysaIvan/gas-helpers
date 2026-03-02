@@ -1,0 +1,26 @@
+# Source & build config
+src/
+*.ts
+vite.config.*
+tsconfig*.json
+vitest.config.*
+
+# Tests
+__specs__/
+**/*.spec.*
+**/*.test.*
+coverage/
+
+# IDE & tooling
+.cursor/
+.vscode/
+.github/
+.editorconfig
+.prettierignore
+
+# Misc
+*.map
+*.log
+.DS_Store
+.env*
+AGENTS.md

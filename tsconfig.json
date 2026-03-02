@@ -1,0 +1,19 @@
+{
+	"compilerOptions": {
+		"target": "es2020",
+		"module": "esnext",
+		"lib": ["es2020"],
+		"moduleResolution": "bundler",
+		"outDir": "dist",
+		"rootDir": ".",
+		"strict": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"allowUnreachableCode": false,
+		"allowUnusedLabels": false,
+		"types": ["node", "@types/google-apps-script", "vitest/globals"]
+	},
+	"include": ["src/**/*", "vite.config.ts"]
+}
