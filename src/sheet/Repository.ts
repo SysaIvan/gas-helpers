@@ -247,10 +247,10 @@ export abstract class Repository<
 	}
 
 	/** Inserts multiple rows in a single API call. */
-	insertBatch(entities: E[]) {
+	insertBatch(entities: E[], fromRow?: number) {
 		if (entities.length === 0) return;
 
-		const startRow = this.sheet.getLastRow() + 1;
+		const startRow = fromRow ?? this.sheet.getLastRow() + 1;
 		const rows = entities.map((e) => e.toRow());
 		const colCount = Math.max(...rows.map((r) => r.length));
 

@@ -193,12 +193,12 @@ repo.commit({ refresh: true }); // reload cache when needed
 
 ### Other methods
 
-| Method                  | Description                                                                                                |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `commit(options?)`      | Applies dirty/toDelete to sheet. `options.refresh: true` — reload cache (default false)                    |
-| `clear(options?)`       | Removes all data rows (except header), clears cache. `options.columns` — optional list of columns to clear |
-| `insert(entity)`        | Adds one row                                                                                               |
-| `insertBatch(entities)` | Adds multiple rows in one API call                                                                         |
+| Method                            | Description                                                                                                |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `commit(options?)`                | Applies dirty/toDelete to sheet. `options.refresh: true` — reload cache (default false)                    |
+| `clear(options?)`                 | Removes all data rows (except header), clears cache. `options.columns` — optional list of columns to clear |
+| `insert(entity)`                  | Adds one row                                                                                               |
+| `insertBatch(entities, fromRow?)` | Adds multiple rows in one API call. `fromRow` — optional start row (default: after last row)               |
 
 ---
 

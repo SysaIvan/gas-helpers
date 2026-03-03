@@ -238,6 +238,18 @@ describe('BaseSheetRepository', () => {
 			repo.insertBatch([]);
 			expect(storage.length).toBe(len);
 		});
+
+		it('inserts at fromRow when specified', () => {
+			const entities = [
+				new TestEntity({ id: 10, name: 'X' }),
+				new TestEntity({ id: 11, name: 'Y' }),
+			];
+			repo.insertBatch(entities, 2);
+			expect(storage[1]).toEqual([10, 'X']);
+			expect(storage[2]).toEqual([11, 'Y']);
+			expect((entities[0] as any)._rowIndex).toBe(2);
+			expect((entities[1] as any)._rowIndex).toBe(3);
+		});
 	});
 
 	describe('upsert', () => {
