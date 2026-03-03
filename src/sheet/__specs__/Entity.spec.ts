@@ -51,6 +51,33 @@ describe('Entity', () => {
 			expect(typeof e.id).toBe('number');
 		});
 
+		it('passes full row as second arg to transformer from', () => {
+			const row = ['10', 'Charlie', true];
+			let capturedRow: unknown[] = [];
+			class RowEntity extends Entity<TestData> {
+				declare id: number;
+				declare name: string;
+				declare active?: boolean;
+				static override config = {
+					columns: { id: 0, name: 1, active: 2 },
+					optional: ['active'] as const,
+					transformers: {
+						id: {
+							from: (v: unknown, r: unknown[]) => {
+								capturedRow = r;
+								return Number(v);
+							},
+						},
+					},
+				};
+				validate(): void {
+					if (!this.name) throw new Error('name required');
+				}
+			}
+			RowEntity.fromRow(row);
+			expect(capturedRow).toBe(row);
+		});
+
 		it('sets _original for dirty check', () => {
 			const e = TestEntity.fromRow([1, 'x', true]) as TestEntity;
 			expect(e.isDirty()).toBe(false);
@@ -69,6 +96,35 @@ describe('Entity', () => {
 		it('validates before serializing', () => {
 			const e = new TestEntity({ id: 1 });
 			expect(() => e.toRow()).toThrow('name is required');
+		});
+
+		it('passes entity object as second arg to transformer to', () => {
+			let capturedEntity: Record<string, unknown> = {};
+			class RowEntity extends Entity<TestData> {
+				declare id: number;
+				declare name: string;
+				declare active?: boolean;
+				static override config = {
+					columns: { id: 0, name: 1, active: 2 },
+					optional: ['active'] as const,
+					transformers: {
+						name: {
+							to: (v: string, entity: Record<string, any>) => {
+								capturedEntity = { ...entity };
+								return v;
+							},
+						},
+					},
+				};
+				validate(): void {
+					if (!this.name) throw new Error('name required');
+				}
+			}
+			const e = new RowEntity({ id: 1, name: 'x', active: true });
+			e.toRow();
+			expect(capturedEntity.id).toBe(1);
+			expect(capturedEntity.name).toBe('x');
+			expect(capturedEntity.active).toBe(true);
 		});
 	});
 

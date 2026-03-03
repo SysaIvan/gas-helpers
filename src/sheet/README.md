@@ -40,21 +40,21 @@ Single `config` object with fields:
 | `columns`       | `Record<keyof T, number>`                | Field to column index mapping (0-based)                |
 | `optional`      | `ReadonlyArray<keyof T>`                 | Fields that can be empty (written as `''`)             |
 | `primaryKey`    | `string`                                 | Primary key field name (if not set — uses `_rowIndex`) |
-| `transformers`  | `{ [K in keyof T]?: Transformer<T[K]> }` | Value transformations on read/write                    |
+| `transformers`  | `{ [K in keyof T]?: Transformer<T[K], T> }` | Value transformations on read/write                    |
 | `defaults`      | `{ [K in keyof T]?: () => T[K] }`        | Default value factories                                |
 | `freezeColumns` | `ReadonlyArray<keyof T>`                 | Columns not overwritten on `commit()` (e.g. formulas)  |
 
 ### Transformers
 
-Serialization/deserialization when reading from sheet and writing back:
+Serialization/deserialization when reading from sheet and writing back. `from(value, row)` receives the full row array; `to(value, entity)` receives the full entity object.
 
 ```typescript
 static override config = {
   columns: { id: 0, createdAt: 1, tags: 2 },
   transformers: {
     id: {
-      from: (v: unknown) => Number(v),           // string → number
-      to: (v: number) => v,
+      from: (v: unknown, row) => Number(v),           // string → number; row = full row
+      to: (v: number, entity) => v,
     },
     createdAt: {
       from: (v: unknown) => v ? new Date(v as string) : undefined,

@@ -1,18 +1,22 @@
 /**
  * Value transformation when reading from sheet (from) and writing (to).
  * @template T - Value type
+ * @template E - Entity type (for `to` second arg)
  */
-export type Transformer<T> = {
-	/** When reading row from sheet */
-	from?: (value: unknown) => T;
-	/** When writing to sheet */
-	to?: (value: T) => unknown;
+export type Transformer<
+	T,
+	E extends Record<string, any> = Record<string, any>,
+> = {
+	/** When reading row from sheet. Second arg: full row array. */
+	from?: (value: unknown, row: unknown[]) => T;
+	/** When writing to sheet. Second arg: full entity object. */
+	to?: (value: T, entity: E) => unknown;
 };
 
 /** Entity configuration: columns, transformers, optional, defaults, primaryKey */
 export type EntityConfig<T extends Record<string, any>> = {
 	columns: Record<keyof T, number>;
-	transformers?: { [K in keyof T]?: Transformer<T[K]> };
+	transformers?: { [K in keyof T]?: Transformer<T[K], T> };
 	optional?: ReadonlyArray<keyof T>;
 	defaults?: { [K in keyof T]?: () => T[K] };
 	primaryKey?: string;
@@ -60,7 +64,7 @@ export abstract class Entity<T extends Record<string, any>> {
 			let value = row[colIndex];
 
 			if (transformers[key]?.from) {
-				value = transformers[key].from!(value);
+				value = transformers[key].from!(value, row);
 			}
 
 			instance[key] = value;
@@ -100,7 +104,7 @@ export abstract class Entity<T extends Record<string, any>> {
 			}
 
 			if (transformers[key]?.to) {
-				value = transformers[key].to!(value);
+				value = transformers[key].to!(value, this as T);
 			}
 
 			row[columns[key]] = value;

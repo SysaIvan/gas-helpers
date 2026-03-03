@@ -1,6 +1,6 @@
 {
 	"name": "@sysa-ivan/gas-helpers",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"description": "Helper utilities for Google Apps Script: UI dialogs, triggers, Telegram notifications, Entity/Repository for Sheets",
 	"keywords": [
 		"google-apps-script",
