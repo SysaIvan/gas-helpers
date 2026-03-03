@@ -379,6 +379,26 @@ describe('BaseSheetRepository', () => {
 			expect(storage[1]).toEqual([1, 'Alice']);
 			expect(storage[2]).toEqual(['', '']);
 		});
+
+		it('does not reload cache when refresh is false (default)', () => {
+			const loadSpy = vi.spyOn(repo, 'load');
+			const e = repo.findByRowIndex(2)!;
+			e.name = 'AliceUpdated';
+			repo.save(e);
+			repo.commit();
+			expect(loadSpy).not.toHaveBeenCalled();
+			expect(storage[1]).toEqual([1, 'AliceUpdated']);
+		});
+
+		it('reloads cache when refresh is true', () => {
+			const loadSpy = vi.spyOn(repo, 'load');
+			const e = repo.findByRowIndex(2)!;
+			e.name = 'AliceUpdated';
+			repo.save(e);
+			repo.commit({ refresh: true });
+			expect(loadSpy).toHaveBeenCalledTimes(1);
+			expect(repo.findAll()[0].name).toBe('AliceUpdated');
+		});
 	});
 
 	describe('clear', () => {

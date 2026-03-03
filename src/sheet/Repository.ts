@@ -142,10 +142,12 @@ export abstract class Repository<
 	}
 
 	/**
-	 * Applies all changes (dirty, toDelete) to sheet and reloads cache.
+	 * Applies all changes (dirty, toDelete) to sheet.
+	 * @param refresh - if true, reloads cache from sheet after commit (default false)
 	 * @example repo.save(entity); repo.delete(entity); repo.commit();
+	 * @example repo.commit({ refresh: true }); // when need fresh cache
 	 */
-	commit() {
+	commit(options?: { refresh?: boolean }) {
 		const dirtyList = Array.from(this.dirty)
 			.map((entity) => ({
 				rowIndex: (entity as any)._rowIndex as number,
@@ -229,7 +231,9 @@ export abstract class Repository<
 		}
 		this.toDelete.clear();
 
-		this.load();
+		if (options?.refresh) {
+			this.load();
+		}
 	}
 
 	/** Inserts one row, updates _rowIndex and cache. */

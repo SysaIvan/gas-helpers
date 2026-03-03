@@ -186,14 +186,16 @@ repo.insertBatch([
 // Upsert: save if _rowIndex exists, else insert
 repo.upsert(user);
 
-// Apply all changes
+// Apply all changes (no cache reload by default)
 repo.commit();
+repo.commit({ refresh: true }); // reload cache when needed
 ```
 
 ### Other methods
 
 | Method                  | Description                                                                                                |
 | ----------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `commit(options?)`      | Applies dirty/toDelete to sheet. `options.refresh: true` — reload cache (default false)                    |
 | `clear(options?)`       | Removes all data rows (except header), clears cache. `options.columns` — optional list of columns to clear |
 | `insert(entity)`        | Adds one row                                                                                               |
 | `insertBatch(entities)` | Adds multiple rows in one API call                                                                         |
@@ -268,5 +270,5 @@ Without `freezeColumns`, `getValues()` returns the calculated value, and `setVal
 - **Columns**: 0-based indices (same as array `row`).
 - **Header**: first row is headers, `load()` reads from row 2.
 - **save()**: adds to dirty only if `entity.isDirty()`.
-- **commit()**: after writing calls `load()` to refresh cache.
+- **commit(options?)**: writes dirty/toDelete to sheet. `options.refresh: true` — reload cache after (default false).
 - **insert/insertBatch**: write to sheet immediately, update `_rowIndex` and cache.
