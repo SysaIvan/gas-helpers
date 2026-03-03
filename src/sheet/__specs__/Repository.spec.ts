@@ -283,5 +283,13 @@ describe('BaseSheetRepository', () => {
 			expect(repo['dirty'].size).toBe(0);
 			expect(repo['toDelete'].size).toBe(0);
 		});
+
+		it('clears only specified columns when options.columns provided', () => {
+			repo.clear({ columns: ['name'] });
+			expect(storage[0]).toEqual(['ID', 'Name']);
+			expect(storage[1]).toEqual([1, '']);
+			expect(storage[2]).toEqual([2, '']);
+			expect(repo.count()).toBe(0);
+		});
 	});
 });

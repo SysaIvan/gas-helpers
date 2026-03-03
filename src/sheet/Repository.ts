@@ -48,11 +48,10 @@ export abstract class Repository<
 		if (to < from) return;
 
 		const colsMap = this.entity.config.columns;
-		const selectedCols =
-			options?.columns ?? (Object.keys(colsMap) as (keyof T)[]);
-		const selectedIndexes = selectedCols.map((c) => colsMap[c]);
-		const minCol = Math.min(...selectedIndexes);
-		const maxCol = Math.max(...selectedIndexes);
+		const indexes = this._getColumnIndexes(options?.columns);
+		const minCol = indexes[0]!;
+		const maxCol = indexes[indexes.length - 1]!;
+		const selectedSet = new Set(indexes);
 		const width = maxCol - minCol + 1;
 		const height = to - from + 1;
 
@@ -65,8 +64,9 @@ export abstract class Repository<
 			const rowFull: any[] = [];
 			for (const key of Object.keys(colsMap)) {
 				const colIndex = colsMap[key as keyof T];
-				const idx = selectedIndexes.indexOf(colIndex);
-				rowFull[colIndex] = idx >= 0 ? values[i][idx] : undefined;
+				rowFull[colIndex] = selectedSet.has(colIndex)
+					? values[i][colIndex - minCol]
+					: undefined;
 			}
 
 			const entity = this.entity.fromRow(rowFull) as E;
@@ -250,21 +250,46 @@ export abstract class Repository<
 		}
 	}
 
-	/** Removes all data rows (except header), clears cache. */
-	clear() {
+	/**
+	 * Removes all data rows (except header), clears cache.
+	 * @param options.columns - optional list of columns to clear; if omitted, clears all entity columns
+	 */
+	clear(options?: { columns?: (keyof T)[] }) {
 		const lastRow = this.sheet.getLastRow();
 		if (lastRow <= 1) return;
-		this.sheet
-			.getRange(
-				2,
-				1,
-				lastRow - 1,
-				Math.max(...Object.values(this.entity.config.columns)) + 1
-			)
-			.clearContent();
+		const indexes = this._getColumnIndexes(options?.columns);
+		const numRows = lastRow - 1;
+		for (const { start, numCols } of Repository.groupConsecutiveRanges(
+			indexes
+		)) {
+			this.sheet.getRange(2, start + 1, numRows, numCols).clearContent();
+		}
 		this.cache = [];
 		this.dirty.clear();
 		this.toDelete.clear();
+	}
+
+	/** Returns sorted unique column indices for given keys (or all if omitted). */
+	private _getColumnIndexes(columns?: (keyof T)[]): number[] {
+		const colsMap = this.entity.config.columns;
+		const selectedCols = columns ?? (Object.keys(colsMap) as (keyof T)[]);
+		return [...new Set(selectedCols.map((c) => colsMap[c]))].sort(
+			(a, b) => a - b
+		);
+	}
+
+	/** Groups sorted column indices into consecutive ranges (0-based start, count). */
+	private static groupConsecutiveRanges(
+		indexes: number[]
+	): { start: number; numCols: number }[] {
+		const ranges: { start: number; numCols: number }[] = [];
+		for (let i = 0; i < indexes.length; ) {
+			let j = i + 1;
+			while (j < indexes.length && indexes[j] === indexes[j - 1] + 1) j++;
+			ranges.push({ start: indexes[i], numCols: j - i });
+			i = j;
+		}
+		return ranges;
 	}
 
 	private _snapshotColumns(entity: E): Partial<T> {

@@ -190,11 +190,11 @@ repo.commit();
 
 ### Other methods
 
-| Method                  | Description                                         |
-| ----------------------- | --------------------------------------------------- |
-| `clear()`               | Removes all data rows (except header), clears cache |
-| `insert(entity)`        | Adds one row                                        |
-| `insertBatch(entities)` | Adds multiple rows in one API call                  |
+| Method                  | Description                                                                                                |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `clear(options?)`       | Removes all data rows (except header), clears cache. `options.columns` — optional list of columns to clear |
+| `insert(entity)`        | Adds one row                                                                                               |
+| `insertBatch(entities)` | Adds multiple rows in one API call                                                                         |
 
 ---
 
