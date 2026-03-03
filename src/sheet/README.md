@@ -35,14 +35,14 @@ class UserEntity extends Entity<UserData> {
 
 Single `config` object with fields:
 
-| Property        | Type                                     | Description                                            |
-| --------------- | ---------------------------------------- | ------------------------------------------------------ |
-| `columns`       | `Record<keyof T, number>`                | Field to column index mapping (0-based)                |
-| `optional`      | `ReadonlyArray<keyof T>`                 | Fields that can be empty (written as `''`)             |
-| `primaryKey`    | `string`                                 | Primary key field name (if not set — uses `_rowIndex`) |
+| Property        | Type                                        | Description                                            |
+| --------------- | ------------------------------------------- | ------------------------------------------------------ |
+| `columns`       | `Record<keyof T, number>`                   | Field to column index mapping (0-based)                |
+| `optional`      | `ReadonlyArray<keyof T>`                    | Fields that can be empty (written as `''`)             |
+| `primaryKey`    | `string`                                    | Primary key field name (if not set — uses `_rowIndex`) |
 | `transformers`  | `{ [K in keyof T]?: Transformer<T[K], T> }` | Value transformations on read/write                    |
-| `defaults`      | `{ [K in keyof T]?: () => T[K] }`        | Default value factories                                |
-| `freezeColumns` | `ReadonlyArray<keyof T>`                 | Columns not overwritten on `commit()` (e.g. formulas)  |
+| `defaults`      | `{ [K in keyof T]?: () => T[K] }`           | Default value factories                                |
+| `freezeColumns` | `ReadonlyArray<keyof T>`                    | Columns not overwritten on `commit()` (e.g. formulas)  |
 
 ### Transformers
 

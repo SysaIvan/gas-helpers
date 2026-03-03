@@ -104,7 +104,7 @@ export abstract class Entity<T extends Record<string, any>> {
 			}
 
 			if (transformers[key]?.to) {
-				value = transformers[key].to!(value, this as T);
+				value = transformers[key].to!(value, this);
 			}
 
 			row[columns[key]] = value;
