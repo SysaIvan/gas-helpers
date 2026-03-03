@@ -22,6 +22,7 @@ export abstract class Repository<
 	protected abstract sheetName: string;
 
 	private _sheet?: GoogleAppsScript.Spreadsheet.Sheet;
+	private _lastLoadedColumns?: (keyof T)[];
 
 	public get sheet(): GoogleAppsScript.Spreadsheet.Sheet {
 		if (!this._sheet) {
@@ -59,6 +60,7 @@ export abstract class Repository<
 			.getRange(from, minCol + 1, height, width)
 			.getValues();
 
+		this._lastLoadedColumns = options?.columns;
 		this.cache = [];
 		for (let i = 0; i < values.length; i++) {
 			const rowFull: any[] = [];
@@ -152,7 +154,8 @@ export abstract class Repository<
 			.sort((a, b) => a.rowIndex - b.rowIndex);
 
 		if (dirtyList.length > 0) {
-			const colCount = Math.max(...dirtyList.map((d) => d.row.length));
+			const fullColCount =
+				Math.max(...Object.values(this.entity.config.columns)) + 1;
 			const freezColIndices = new Set<number>();
 			if (this.entity.config.freezeColumns) {
 				for (const key of this.entity.config.freezeColumns) {
@@ -160,13 +163,25 @@ export abstract class Repository<
 				}
 			}
 
+			const writeColIndexes = this._lastLoadedColumns
+				? this._getColumnIndexes(this._lastLoadedColumns).filter(
+						(i) => !freezColIndices.has(i)
+					)
+				: [...Array(fullColCount).keys()].filter(
+						(i) => !freezColIndices.has(i)
+					);
+			const writeRanges =
+				writeColIndexes.length > 0
+					? Repository.groupConsecutiveRanges(writeColIndexes)
+					: [];
+
 			const blocks: { startRow: number; rows: any[][] }[] = [];
 			let current: { startRow: number; rows: any[][] } | null = null;
 
 			for (const { rowIndex, row } of dirtyList) {
 				const padded = [
 					...row,
-					...new Array(colCount - row.length).fill(''),
+					...new Array(fullColCount - row.length).fill(''),
 				];
 				if (
 					current &&
@@ -179,15 +194,10 @@ export abstract class Repository<
 				}
 			}
 
-			const writeRanges =
-				freezColIndices.size > 0
-					? Repository.groupNonFreezRanges(colCount, freezColIndices)
-					: [{ start: 0, numCols: colCount }];
-
 			for (const block of blocks) {
 				for (const { start, numCols } of writeRanges) {
 					const rows = block.rows.map((r) =>
-						r.slice(start, start + numCols)
+						r.slice(start, start + numCols).map((v) => v ?? '')
 					);
 					this.sheet
 						.getRange(

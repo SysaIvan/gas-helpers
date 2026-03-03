@@ -330,6 +330,45 @@ describe('BaseSheetRepository', () => {
 			);
 		});
 
+		it('does not overwrite columns not loaded (projection)', () => {
+			type FourCol = { a: number; b: string; c: number; d: string };
+			class FourColEntity extends Entity<FourCol> {
+				declare a: number;
+				declare b: string;
+				declare c: number;
+				declare d: string;
+				static override config = {
+					columns: { a: 0, b: 1, c: 2, d: 3 },
+				};
+				validate(): void {
+					if (this.d === undefined) throw new Error('d required');
+				}
+			}
+			class FourColRepo extends Repository<FourCol, FourColEntity> {
+				protected entity = FourColEntity;
+				protected sheetName = 'TestSheet';
+			}
+
+			storage = [
+				['A', 'B', 'C', 'D'],
+				[10, 'x', 1, 'Alice'],
+				[20, 'y', 2, 'Bob'],
+			];
+			mockSheet = createMockSheet(storage);
+
+			const repo4 = new FourColRepo();
+			repo4.load({ columns: ['c', 'd'] });
+			const e = repo4.findByRowIndex(2)!;
+			e.d = 'AliceUpdated';
+			repo4.save(e);
+			repo4.commit();
+
+			expect(storage[1][0]).toBe(10);
+			expect(storage[1][1]).toBe('x');
+			expect(storage[1][2]).toBe(1);
+			expect(storage[1][3]).toBe('AliceUpdated');
+		});
+
 		it('removes toDelete rows', () => {
 			const e = repo.findByRowIndex(3)! as TestEntity & {
 				_rowIndex: number;

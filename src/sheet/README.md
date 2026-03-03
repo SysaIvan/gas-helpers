@@ -137,6 +137,7 @@ repo.load({ fromRow: 2, toRow: 100 });
 
 // Selected columns only (projection)
 repo.load({ columns: ['id', 'name'] });
+// commit() writes only loaded columns — unloaded columns are preserved
 ```
 
 ### Reading
