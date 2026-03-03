@@ -128,7 +128,7 @@ export abstract class Repository<
 	/** Updates entities via callback and adds to dirty. */
 	update(
 		entities: (E & { _rowIndex: number })[],
-		updater: (entity: E) => void
+		updater: (entity: E & { _rowIndex: number }) => void
 	): void {
 		entities.forEach((entity) => {
 			updater(entity);
