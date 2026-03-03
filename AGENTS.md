@@ -63,9 +63,10 @@ const current = state.getOrDefault(); // never null when defaults provided
 
 ```typescript
 static override config: EntityConfig<T> = {
-  columns: { id: 0, name: 1 },
-  optional: ['email'],
-  transformers: { id: { from: v => Number(v), to: v => v } },
+ columns: { id: 0, name: 1 },
+ optional: ['email'],
+ freezeColumns: ['source'], // not overwritten on commit()
+ transformers: { id: { from: v => Number(v), to: v => v } },
 };
 ```
 

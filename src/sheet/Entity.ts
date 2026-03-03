@@ -16,6 +16,8 @@ export type EntityConfig<T extends Record<string, any>> = {
 	optional?: ReadonlyArray<keyof T>;
 	defaults?: { [K in keyof T]?: () => T[K] };
 	primaryKey?: string;
+	/** Columns not overwritten on commit() (e.g. formulas) */
+	freezeColumns?: ReadonlyArray<keyof T>;
 };
 
 /**

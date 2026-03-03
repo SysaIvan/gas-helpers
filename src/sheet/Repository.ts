@@ -153,6 +153,12 @@ export abstract class Repository<
 
 		if (dirtyList.length > 0) {
 			const colCount = Math.max(...dirtyList.map((d) => d.row.length));
+			const freezColIndices = new Set<number>();
+			if (this.entity.config.freezeColumns) {
+				for (const key of this.entity.config.freezeColumns) {
+					freezColIndices.add(this.entity.config.columns[key]);
+				}
+			}
 
 			const blocks: { startRow: number; rows: any[][] }[] = [];
 			let current: { startRow: number; rows: any[][] } | null = null;
@@ -173,10 +179,25 @@ export abstract class Repository<
 				}
 			}
 
+			const writeRanges =
+				freezColIndices.size > 0
+					? Repository.groupNonFreezRanges(colCount, freezColIndices)
+					: [{ start: 0, numCols: colCount }];
+
 			for (const block of blocks) {
-				this.sheet
-					.getRange(block.startRow, 1, block.rows.length, colCount)
-					.setValues(block.rows);
+				for (const { start, numCols } of writeRanges) {
+					const rows = block.rows.map((r) =>
+						r.slice(start, start + numCols)
+					);
+					this.sheet
+						.getRange(
+							block.startRow,
+							start + 1,
+							block.rows.length,
+							numCols
+						)
+						.setValues(rows);
+				}
 			}
 		}
 		this.dirty.clear();
@@ -276,6 +297,18 @@ export abstract class Repository<
 		return [...new Set(selectedCols.map((c) => colsMap[c]))].sort(
 			(a, b) => a - b
 		);
+	}
+
+	/** Groups non-frozen column indices into consecutive ranges (0-based start, count). */
+	private static groupNonFreezRanges(
+		colCount: number,
+		freezIndices: Set<number>
+	): { start: number; numCols: number }[] {
+		const indexes: number[] = [];
+		for (let i = 0; i < colCount; i++) {
+			if (!freezIndices.has(i)) indexes.push(i);
+		}
+		return Repository.groupConsecutiveRanges(indexes);
 	}
 
 	/** Groups sorted column indices into consecutive ranges (0-based start, count). */

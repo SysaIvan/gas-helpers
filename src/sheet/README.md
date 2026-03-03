@@ -35,13 +35,14 @@ class UserEntity extends Entity<UserData> {
 
 Single `config` object with fields:
 
-| Property       | Type                                     | Description                                            |
-| -------------- | ---------------------------------------- | ------------------------------------------------------ |
-| `columns`      | `Record<keyof T, number>`                | Field to column index mapping (0-based)                |
-| `optional`     | `ReadonlyArray<keyof T>`                 | Fields that can be empty (written as `''`)             |
-| `primaryKey`   | `string`                                 | Primary key field name (if not set — uses `_rowIndex`) |
-| `transformers` | `{ [K in keyof T]?: Transformer<T[K]> }` | Value transformations on read/write                    |
-| `defaults`     | `{ [K in keyof T]?: () => T[K] }`        | Default value factories                                |
+| Property        | Type                                     | Description                                            |
+| --------------- | ---------------------------------------- | ------------------------------------------------------ |
+| `columns`       | `Record<keyof T, number>`                | Field to column index mapping (0-based)                |
+| `optional`      | `ReadonlyArray<keyof T>`                 | Fields that can be empty (written as `''`)             |
+| `primaryKey`    | `string`                                 | Primary key field name (if not set — uses `_rowIndex`) |
+| `transformers`  | `{ [K in keyof T]?: Transformer<T[K]> }` | Value transformations on read/write                    |
+| `defaults`      | `{ [K in keyof T]?: () => T[K] }`        | Default value factories                                |
+| `freezeColumns` | `ReadonlyArray<keyof T>`                 | Columns not overwritten on `commit()` (e.g. formulas)  |
 
 ### Transformers
 
@@ -243,6 +244,21 @@ todo.forEach((t) => {
 taskRepo.insert(new TaskEntity({ id: 10, title: 'New task', done: false }));
 taskRepo.commit();
 ```
+
+---
+
+### freezeColumns
+
+Columns not overwritten on `commit()` (e.g. formulas like `=IMPORTRANGE(...)`). Only non-frozen columns are written:
+
+```typescript
+static override config = {
+  columns: { id: 0, source: 1, name: 2 },
+  freezeColumns: ['source'],
+};
+```
+
+Without `freezeColumns`, `getValues()` returns the calculated value, and `setValues()` on commit overwrites the formula with that value.
 
 ---
 

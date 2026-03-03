@@ -21,7 +21,8 @@ class TestRepository extends Repository<TestData, TestEntity> {
 	protected sheetName = 'TestSheet';
 }
 
-const createMockSheet = (storage: any[][]) => {
+const createMockSheet = (storage: any[][], formulasStorage?: string[][]) => {
+	const formulas = formulasStorage ?? storage.map((r) => r.map(() => ''));
 	return {
 		getRange: vi.fn(
 			(row: number, col: number, numRows: number, numCols: number) => ({
@@ -31,12 +32,23 @@ const createMockSheet = (storage: any[][]) => {
 						r.slice(col - 1, col - 1 + numCols)
 					);
 				},
+				getFormulas: () => {
+					const result = formulas.slice(row - 1, row - 1 + numRows);
+					return result.map((r) =>
+						r.slice(col - 1, col - 1 + numCols)
+					);
+				},
 				setValues: (vals: any[][]) => {
 					const start = row - 1;
 					vals.forEach((v, i) => {
 						if (!storage[start + i]) storage[start + i] = [];
+						if (!formulas[start + i]) formulas[start + i] = [];
 						v.forEach((c, j) => {
 							storage[start + i][col - 1 + j] = c;
+							formulas[start + i][col - 1 + j] =
+								typeof c === 'string' && c.startsWith('=')
+									? c
+									: '';
 						});
 					});
 				},
@@ -44,8 +56,10 @@ const createMockSheet = (storage: any[][]) => {
 					const start = row - 1;
 					for (let i = 0; i < numRows; i++) {
 						if (!storage[start + i]) storage[start + i] = [];
+						if (!formulas[start + i]) formulas[start + i] = [];
 						for (let j = 0; j < numCols; j++) {
 							storage[start + i][col - 1 + j] = '';
+							formulas[start + i][col - 1 + j] = '';
 						}
 					}
 				},
@@ -257,6 +271,63 @@ describe('BaseSheetRepository', () => {
 			repo.save(e);
 			repo.commit();
 			expect(storage[1]).toEqual([1, 'AliceUpdated']);
+		});
+
+		it('preserves freezeColumns on commit', () => {
+			type DataWithFormula = { id: number; source: string; name: string };
+			class EntityWithFormula extends Entity<DataWithFormula> {
+				declare id: number;
+				declare source: string;
+				declare name: string;
+				static override config = {
+					columns: { id: 0, source: 1, name: 2 },
+					freezeColumns: ['source'] as const,
+				};
+				validate(): void {
+					if (!this.name) throw new Error('name required');
+				}
+			}
+			class RepoWithFormula extends Repository<
+				DataWithFormula,
+				EntityWithFormula
+			> {
+				protected entity = EntityWithFormula;
+				protected sheetName = 'TestSheet';
+			}
+
+			const formulaStorage = [
+				['ID', 'Source', 'Name'],
+				[1, 'val', 'Alice'],
+				[2, 'val', 'Bob'],
+			];
+			const formulasStorage = [
+				['', '', ''],
+				['', '=IMPORTRANGE("url";"Sync!B2:B")', ''],
+				['', '=IMPORTRANGE("url";"Sync!B2:B")', ''],
+			];
+			const sheetWithFormula = createMockSheet(
+				formulaStorage,
+				formulasStorage
+			);
+			(global as any).SpreadsheetApp = {
+				getActive: () => ({
+					getSheetByName: (name: string) =>
+						name === 'TestSheet' ? sheetWithFormula : null,
+				}),
+			};
+
+			const repoFormula = new RepoWithFormula();
+			repoFormula.load();
+			const entity = repoFormula.findByRowIndex(2)!;
+			entity.name = 'AliceUpdated';
+			repoFormula.save(entity);
+			repoFormula.commit();
+
+			expect(formulaStorage[1][0]).toBe(1);
+			expect(formulaStorage[1][2]).toBe('AliceUpdated');
+			expect(formulasStorage[1][1]).toBe(
+				'=IMPORTRANGE("url";"Sync!B2:B")'
+			);
 		});
 
 		it('removes toDelete rows', () => {
