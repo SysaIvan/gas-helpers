@@ -1,6 +1,6 @@
 # Entity & Repository for Google Sheets
 
-Utilities for working with Google Sheets data in an object-oriented style: Entity — row model, Repository — sheet access with cache and Unit of Work.
+Utilities for working with Google Sheets data in an object-oriented style: **Entity** — row model; **Repository** — whole sheet tab (cache + Unit of Work); **TableRepository** — a named **Table** (Insert → Table) with optional Sheets REST API for resizing rows.
 
 ---
 
@@ -202,6 +202,81 @@ repo.commit({ refresh: true }); // reload cache when needed
 
 ---
 
+## TableRepository
+
+`TableRepository<T, E>` — abstract class like `Repository`, but bound to a **named Table** in the workbook (Sheets menu **Insert → Table**). It resolves the range via **`Sheets.Spreadsheets.get`** (advanced service), then reads/writes cells with `SpreadsheetApp` on the sheet that owns the table.
+
+### Google Sheets advanced service (required)
+
+In the Apps Script editor, open **Services** (_Advanced Google services_ / редактор сервисов) and enable **Google Sheets API** so the global `Sheets` object exists. If the service is off, constructing `TableRepository` throws. Depending on deployment, ensure the Sheets API is also enabled on the GCP project tied to the script.
+
+**`sheetName`** on the subclass must be the **table name** shown in Sheets (often different from the worksheet tab title).
+
+### Constructor
+
+```typescript
+new TableRepositorySubclass(); // defaults
+new TableRepositorySubclass({ soft: true }); // default soft writes (see below)
+```
+
+### Repository vs TableRepository
+
+|                            | Repository                   | TableRepository                                                                             |
+| -------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------- |
+| Scope                      | Entire sheet tab by tab name | One **Table** entity by **table name**                                                      |
+| Header / data rows         | Row 1 header, row 2+ data    | First row inside the table range = header; data rows follow                                 |
+| `load({ fromRow, toRow })` | 1-based sheet rows           | Same (absolute sheet indexes); results are clipped to the table body                        |
+| Structural row inserts     | Appends rows (last row + 1)  | Can call REST `batchUpdate` (`insertDimension`) when **not** `soft`                         |
+| Full clear (`clear`)       | Clears columns from row 2    | Without `columns` and not **soft**, can remove all data rows with `deleteDimension` via API |
+
+### **soft** mode (`TableWriteOptions`)
+
+If `soft` is `true` (constructor default or per-call options): **delete** clears row cells instead of removing the row dimension; **insert** only writes into existing empty rows inside the table (no `insertDimension`). Use when the table size is fixed or you want to avoid structural changes.
+
+### Creating a repository
+
+```typescript
+class OrderTableRepository extends TableRepository<OrderData, OrderEntity> {
+	protected entity = OrderEntity;
+	protected sheetName = 'SalesTable'; // must match the Table name in the UI
+}
+```
+
+### Loading, reading, Unit of Work
+
+Same surface as `Repository` where applicable: `load`, `findAll`, `findByRowIndex`, `findBy`, `findOne`, `exists`, `count`, `countBy`, `save`, `update`, `delete`, `upsert`.
+
+`commit` supports:
+
+```typescript
+repo.commit();
+repo.commit({ refresh: true });
+repo.commit({ soft: true }); // propagate to deletes in this commit
+```
+
+Insert:
+
+```typescript
+repo.insert(entity);
+repo.insert(entity, { soft: true });
+
+repo.insertBatch([e1, e2]);
+repo.insertBatch([e1, e2], startRow); // optional 1-based start row
+repo.insertBatch([e1, e2], { soft: true });
+repo.insertBatch([e1, e2], startRow, { soft: true });
+```
+
+### Other TableRepository specifics
+
+| Method             | Notes                                                                                                                                             |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `commit(options?)` | Dirty rows + deletes; `refresh` reloads cache. `soft` overrides default for **deletes** in this batch.                                            |
+| `clear(options?)`  | `columns` narrows clearing. Full wipe without `columns` and **not** `soft` deletes data rows via `deleteDimension`; otherwise clears cell ranges. |
+
+`freezeColumns` on the entity behaves like `Repository`: non-frozen columns are written on `commit()`; frozen columns stay formulas/values untouched.
+
+---
+
 ## Full example
 
 ```typescript
@@ -272,3 +347,4 @@ Without `freezeColumns`, `getValues()` returns the calculated value, and `setVal
 - **save()**: adds to dirty only if `entity.isDirty()`.
 - **commit(options?)**: writes dirty/toDelete to sheet. `options.refresh: true` — reload cache after (default false).
 - **insert/insertBatch**: write to sheet immediately, update `_rowIndex` and cache.
+- **TableRepository**: uses the Sheets advanced service (`Sheets`). Enable it in the script project before use. Targets a **named Table**; `sheetName` is the table name from the Sheets UI.

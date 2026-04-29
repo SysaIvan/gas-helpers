@@ -10,6 +10,7 @@ import {
 	Entity,
 	type EntityConfig,
 	Repository,
+	TableRepository,
 	type Transformer,
 } from 'gas-helpers/sheet';
 import { TelegramNotifier } from 'gas-helpers/telegram';
@@ -22,6 +23,7 @@ import { Ui } from 'gas-helpers/ui';
 - **Ui is NOT available** when script runs from: triggers, onEdit, time-driven, API. Always check `Ui.isAvailable()` before `alert`, `confirm`, `prompt`.
 - **Secrets**: Store `botToken` in `PropertiesService.getScriptProperties()`, not in code.
 - **chatId**: User IDs are numeric; group IDs start with `-100`. Get via `getUpdates` after sending a message to the bot.
+- **TableRepository** (`gas-helpers/sheet`): Enable **Google Sheets** under **Advanced Google services** (Editor Services / APIs) so the global `Sheets` object exists. Used for workbook **Tables** (Insert → Table), not arbitrary sheet ranges — `sheetName` is the **table name**.
 
 ## Quick Patterns
 
@@ -75,5 +77,5 @@ static override config: EntityConfig<T> = {
 - [ui](./src/ui/README.md) — dialogs
 - [triggers](./src/triggers/README.md) — time triggers
 - [telegram](./src/telegram/README.md) — bot setup
-- [sheet](./src/sheet/README.md) — Entity/Repository (detailed)
+- [sheet](./src/sheet/README.md) — Entity, Repository, TableRepository (Sheets Tables + advanced service)
 - [properties](./src/properties/README.md) — ScriptProperty (typed key-value storage)
